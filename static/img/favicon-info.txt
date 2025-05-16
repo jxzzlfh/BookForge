@@ -1,0 +1,15 @@
+关于 BookForge 图标文件说明
+
+favicon.png 和 favicon.svg 是本站的网站图标，已经更新为 BookForge 网站图标。
+
+favicon.png:
+- 尺寸: 32x32 像素
+- 格式: PNG 带透明度
+- 主色: #0d6efd (蓝色)
+
+favicon.svg:
+- 可缩放矢量图
+- 主色: #0d6efd (蓝色)
+- 设计: 简约书本设计
+
+这些图标用于浏览器标签页和书签显示，代表 BookForge 品牌。 

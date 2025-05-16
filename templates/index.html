@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookForge | 专业电子书格式转换工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    <!-- Favicon设置 -->
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}" type="image/png">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.png') }}" type="image/png">
+    <meta name="theme-color" content="#0d6efd">
+</head>
+<body>
+    <!-- 页面加载动画 -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-icon"></div>
+    </div>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card main-card shadow">
+                    <div class="card-header bg-gradient">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="app-icon me-3">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <h1 class="h2 mb-0 main-title">BookForge</h1>
+                        </div>
+                        <p class="text-center mb-0 mt-2 title-subtitle">专业电子书格式转换工具 | 简单、快速、高效</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="alert alert-info formats-alert">
+                                    <div class="formats-header">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <h5 class="mb-2">支持的输入格式</h5>
+                                    </div>
+                                    <p class="mb-0 formats-list">EPUB, MOBI, AZW, AZW3, PDF, DOCX, HTML, TXT, RTF, FB2, LIT, PRC, ODT, CBZ, CBR</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="upload-form" method="post" enctype="multipart/form-data">
+                            <div class="row mb-4">
+                                <div class="col-lg-6 mb-3 mb-lg-0">
+                                    <div class="card h-100 upload-card">
+                                        <div class="card-body">
+                                            <label for="files" class="form-label fw-bold">
+                                                <i class="bi bi-file-earmark-text me-2"></i>选择电子书文件
+                                            </label>
+                                            <div class="upload-zone" id="upload-zone">
+                                                <input class="form-control" type="file" id="files" name="files[]" multiple required>
+                                                <div class="upload-placeholder">
+                                                    <i class="bi bi-cloud-arrow-up"></i>
+                                                    <p>点击选择文件或拖放到此处</p>
+                                                    <small class="text-muted">支持多选文件</small>
+                                                </div>
+                                            </div>
+                                            <div id="selected-files" class="mt-3"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="card h-100 format-card">
+                                        <div class="card-body">
+                                            <label for="output_format" class="form-label fw-bold">
+                                                <i class="bi bi-arrow-right-circle me-2"></i>输出格式
+                                            </label>
+                                            <select class="form-select custom-select" id="output_format" name="output_format" required>
+                                                <option value="" selected disabled>请选择输出格式</option>
+                                                {% for format in output_formats %}
+                                                <option value="{{ format }}" data-icon="bi-file-earmark">{{ format.upper() }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            
+                                            <div class="form-check mt-3">
+                                                <input class="form-check-input" type="checkbox" id="show-advanced" name="show-advanced">
+                                                <label class="form-check-label" for="show-advanced">
+                                                    <i class="bi bi-gear-fill me-2"></i>显示高级选项
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="advanced-options" class="row mb-4" style="display: none;">
+                                <div class="col-md-12">
+                                    <div class="card advanced-card">
+                                        <div class="card-header bg-light">
+                                            <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>高级转换选项</h5>
+                                        </div>
+                                        <div class="card-body" id="format-options">
+                                            <!-- 动态加载格式特定选项 -->
+                                            <p class="text-muted text-center py-3">请先选择输出格式</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-12 text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg convert-btn" id="convert-btn">
+                                        <span class="spinner-border spinner-border-sm d-none" id="loading-spinner" role="status" aria-hidden="true"></span>
+                                        <i class="bi bi-lightning-charge me-2"></i>开始转换
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="conversion-results" style="display: none;">
+                                    <div class="results-header">
+                                        <h4><i class="bi bi-check-circle me-2"></i>转换结果</h4>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped results-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>原文件名</th>
+                                                    <th>状态</th>
+                                                    <th>输出文件名</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="results-table">
+                                                <!-- 结果将动态插入这里 -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-center mt-4">
+                                        <a href="#" id="download-link" class="btn btn-success btn-lg download-btn">
+                                            <i class="bi bi-download me-2"></i>下载所有转换文件
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center text-muted py-3">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <small>基于 Calibre ebook-convert 引擎 | <a href="https://manual.calibre-ebook.com/generated/en/ebook-convert.html" target="_blank">查看文档</a></small>
+                                <div class="mt-2">
+                                    <small>&copy; 2025 BookForge - 高品质电子书转换工具</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // 页面加载完成后隐藏加载动画
+        window.addEventListener('load', () => {
+            const pageLoader = document.getElementById('pageLoader');
+            pageLoader.classList.add('loader-hidden');
+            setTimeout(() => {
+                pageLoader.style.display = 'none';
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

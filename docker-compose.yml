@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  bookforge:
+    build: .
+    restart: always
+    container_name: bookforge
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./converted:/app/converted
+      - ./downloads:/app/downloads
+    environment:
+      - TZ=Asia/Shanghai 
